@@ -1,0 +1,15 @@
+{
+  "requests":[
+    {
+      "image":{
+        "content": "picture.txt"
+      },
+      "features": [
+        {
+          "type":"LABEL_DETECTION",
+          "maxResults":1
+        }
+      ]
+    }
+  ]
+}
