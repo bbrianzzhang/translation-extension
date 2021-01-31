@@ -56,31 +56,30 @@ document.addEventListener('mouseup', e => {
             let data = response.screenshotUrl;
             let img = new Image();
             img.src = data;
-            document.body.appendChild(img);
-            let canvas=document.createElement('canvas');
-            let ctx = canvas.getContext('2d');
-            ctx.drawImage(img, x1, y1, x2-x1, y2-y1, 0, 0, x2-x1, y2-y1);
-            document.body.appendChild(canvas);
-            let newSource = canvas.toDataURL('image/jpeg');
-            let cropped = new Image();
-            document.body.appendChild(cropped);
-            let temp = document.createTextNode(newSource);
-            document.body.appendChild(temp);
+            // let canvas=document.createElement('canvas');
+            // let ctx = canvas.getContext('2d');
+            // ctx.drawImage(img, x1, y1, x2-x1, y2-y1, 0, 0, x2-x1, y2-y1);
+            // document.body.appendChild(canvas);
+            // let newSource = canvas.toDataURL('image/jpeg');
+            // let cropped = new Image();
+            // document.body.appendChild(cropped);
+            // let temp = document.createTextNode(newSource);
+            // document.body.appendChild(temp);
 
-            // if (newSource) {
-            //     chrome.runtime.sendMessage(
-            //         {topic: newSource},
-            //         function (response) {
-            //             let result = response.farewell;
-            //             alert(result.summary);
-            //             var notifOptions = {
-            //                 type: "basic",
-            //                 iconUrl: "icon48.png",
-            //                 title: "Image",
-            //                 message: result.summary
-            //             };
-            //             chrome.notifications.create('Image', notifOptions);
-            //         });
-            // }
+            if (data) {
+                chrome.runtime.sendMessage(
+                    {topic: data, x1:x1, x2:x2, y1:y1, y2:y2},
+                    function (response) {
+                        let result = response.farewell;
+                        alert(result.summary);
+                        var notifOptions = {
+                            type: "basic",
+                            iconUrl: "icon48.png",
+                            title: "Image",
+                            message: result.summary
+                        };
+                        chrome.notifications.create('Image', notifOptions);
+                    });
+            }
         });
 })

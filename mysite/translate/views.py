@@ -17,7 +17,12 @@ def index(request):
 
 def get_translation(request):
     imagelink = request.GET.get('topic', None)
+    x1 = request.GET.get('x1', None)
+    x2 = request.GET.get('x2', None)
+    y1 = request.GET.get('y1', None)
+    y2 = request.GET.get('y2', None)
     print('json-data to be sent: ', imagelink)
+    print(x1 + " " + x2 + " " + y1 + " " + y2)
     data = {
         'summary': imagelink,
         'raw': 'Successful',
