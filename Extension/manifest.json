@@ -2,7 +2,7 @@
   "name": "Translator",
   "version": "1.0",
   "description": "Translate things on the go!!",
-  "permissions": ["storage", "tabs", "contextMenus", "<all_urls>"],
+  "permissions": ["storage", "tabs", "contextMenus", "<all_urls>","http://127.0.0.1:8000/"],
   "manifest_version": 2,
   "content_scripts": [{
       "matches": ["<all_urls>"],

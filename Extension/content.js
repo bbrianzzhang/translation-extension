@@ -1,41 +1,86 @@
-chrome.runtime.onMessage.addListener(function(request) {
-    if(request.message === "takeScreenshot") {
-        chrome.extension.sendMessage({name: 'screenshot'}, function(response) {
-        let data = response.screenshotUrl;
-        let canvas = document.createElement('canvas');
-        let img = new Image();
-        img.onload = function() {
-            canvas.width = $(window).width();
-            canvas.height = $(window).height()
-            canvas.getContext("2d").drawImage(img, 0, 0, canvas.width, canvas.height);
+let x1 = 0;
+let x2 = 0;
+let y1 = 0;
+let y2 = 0;
+let start = {};
+let end = {};
+let selectionMode = false;
+let isSelecting = false;
 
-            var $canvas = $(canvas);
-            $canvas.data('scrollLeft', $(document.body).scrollLeft());
-            $canvas.data('scrollTop', $(document.body).scrollTop());
-
-            callback($canvas);
-        }
-        img.src = data;
-        document.body.appendChild(img);
-        let temp = document.createTextNode(data);
-        document.body.appendChild(temp);
-    });
+chrome.runtime.onMessage.addListener(function (request) {
+    if (request.message === "takeScreenshot") {
+        selectionMode = true;
     }
+    return Promise.resolve("temp");
 })
 
-function renderPreview ($element, $screenshotCanvas) {
-    var previewCanvas = document.createElement('canvas');
-    previewCanvas.width = $element.width();
-    previewCanvas.height = $element.height();
+document.addEventListener('mousedown', e => {
+    if (!selectionMode) {
+        return;
+    }
+    x1 = e.offsetX;
+    y1 = e.offsetY;
+    isSelecting = true;
+    $('#selection').css({
+        left: start.x,
+        top: start.y
+    });
+})
 
-    var prevTop = $element.offset().top - $screenshotCanvas.data('scrollTop');
-    var prevLeft = $element.offset().left - $screenshotCanvas.data('scrollLeft');
+document.addEventListener('mousemove', e => {
+    if (!isSelecting || !selectionMode) {
+        return;
+    }
 
-    var ctx = previewCanvas.getContext("2d");
-    ctx.drawImage($screenshotCanvas[0], prevLeft, prevTop,
-                                        $element.width(), $element.height(),
-                                        0, 0,
-                                        $element.width(), $element.height());
+    x2 = e.offsetX;
+    y2 = e.offsetY;
 
-    return $(previewCanvas).css({ border:'1px solid black' });
-}
+    $('#selection').css({
+        left: start.x < end.x ? start.x : end.x,
+        top: start.y < end.y ? start.y : end.y,
+        width: Math.abs(start.x - end.x),
+        height: Math.abs(start.y - end.y)
+    });
+})
+
+document.addEventListener('mouseup', e => {
+    if (!selectionMode) {
+        return;
+    }
+    isSelecting = false;
+    selectionMode = false;
+    x2 = e.offsetX;
+    y2 = e.offsetY;
+
+    chrome.extension.sendMessage({name: 'screenshot'}, function (response) {
+            let data = response.screenshotUrl;
+            let img = new Image();
+            img.src = data;
+            document.body.appendChild(img);
+            let canvas=document.createElement('canvas');
+            let ctx = canvas.getContext('2d');
+            ctx.drawImage(img, x1, y1, x2-x1, y2-y1, 0, 0, x2-x1, y2-y1);
+            document.body.appendChild(canvas);
+            let newSource = canvas.toDataURL('image/jpeg');
+            let cropped = new Image();
+            document.body.appendChild(cropped);
+            let temp = document.createTextNode(newSource);
+            document.body.appendChild(temp);
+
+            // if (newSource) {
+            //     chrome.runtime.sendMessage(
+            //         {topic: newSource},
+            //         function (response) {
+            //             let result = response.farewell;
+            //             alert(result.summary);
+            //             var notifOptions = {
+            //                 type: "basic",
+            //                 iconUrl: "icon48.png",
+            //                 title: "Image",
+            //                 message: result.summary
+            //             };
+            //             chrome.notifications.create('Image', notifOptions);
+            //         });
+            // }
+        });
+})
